@@ -4,6 +4,7 @@ spikes
 *.pyc
 ./*
 .*
+!.dockerignore
 niq
 postgres.ipynb
 postgress.py

@@ -1,0 +1,9 @@
+.idea
+.venv
+spikes
+*.pyc
+.git*
+.ipy*
+.local
+.vscode
+niq

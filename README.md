@@ -135,3 +135,9 @@ docker compose up -d
 ```
 pytest
 ```
+
+## Scope for Inmprovement
+
+* Add Load Balancer for better traffic routing and fault toleration
+* Create proper observability for model performance and service app performance
+* Creating kubernetes based pods gives upper hand on robust resilience
