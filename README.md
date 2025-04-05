@@ -140,4 +140,5 @@ pytest
 
 * Add Load Balancer for better traffic routing and fault toleration
 * Create proper observability for model performance and service app performance
+* Based on model performance metric we can decide on change in model or improvement
 * Creating kubernetes based pods gives upper hand on robust resilience
