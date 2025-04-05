@@ -136,7 +136,7 @@ docker compose up -d
 pytest
 ```
 
-## Scope for Inmprovement
+## Scope for Improvement
 
 * Add Load Balancer for better traffic routing and fault toleration
 * Create proper observability for model performance and service app performance
