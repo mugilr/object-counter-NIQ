@@ -2,3 +2,12 @@
 .venv
 spikes
 *.pyc
+./*
+.*
+niq
+postgres.ipynb
+postgress.py
+run.sh
+entry.sh
+if_test.sh
+

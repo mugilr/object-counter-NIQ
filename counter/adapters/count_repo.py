@@ -1,6 +1,7 @@
 from typing import List
 
 from pymongo import MongoClient
+import psycopg2
 
 from counter.domain.models import ObjectCount
 from counter.domain.ports import ObjectCountRepo
@@ -54,3 +55,48 @@ class CountMongoDBRepo(ObjectCountRepo):
         for value in new_values:
             counter_col.update_one({'object_class': value.object_class}, {'$inc': {'count': value.count}}, upsert=True)
 
+class CountPostgresRepo(ObjectCountRepo):
+
+    def __init__(self, host, port, database, username, password):
+        self.__host = host
+        self.__port = port
+        self.__database = database
+        self.__username = username
+        self.__password = password
+
+    def __get_counter_client(self):
+        client = psycopg2.connect(host=self.__host,
+                                port=self.__port,
+                                user=self.__username,
+                                password=self.__password,
+                                dbname=self.__database)
+        return client
+
+    def read_values(self, object_classes: List[str] = None) -> List[ObjectCount]:
+        counter_client = self.__get_counter_client()
+        counter_curr = counter_client.cursor()
+        object_counts = []
+        if object_classes:
+            placeholders = ', '.join(['%s'] * len(object_classes))
+            sql_query = f"SELECT object_class, count FROM object_counter WHERE object_class IN ({placeholders});"
+            counter_curr.execute(sql_query, tuple(object_classes))
+            counters = counter_curr.fetchall()
+            for counter in counters:
+                object_counts.append(ObjectCount(counter[0], counter[1]))
+        counter_client.commit()
+        counter_client.close()
+        return object_counts
+
+    def update_values(self, new_values: List[ObjectCount]):
+        counter_client = self.__get_counter_client()
+        counter_curr = counter_client.cursor()
+        upsert_query = """
+            INSERT INTO object_counter (object_class, count)
+            VALUES (%s, %s)
+            ON CONFLICT (object_class)
+            DO UPDATE SET count = object_counter.count + EXCLUDED.count;
+            """
+        for value in new_values:
+            counter_curr.execute(upsert_query,(value.object_class, value.count))
+        counter_client.commit()
+        counter_client.close()

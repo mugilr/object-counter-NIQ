@@ -1,0 +1,77 @@
+#docker run \
+#    --name=tfserving \
+#    -p 8500:8500 \
+#    -p 8501:8501 \
+#    -v "$(pwd)/tmp/model:/models" \
+#    -e OMP_NUM_THREADS=$num_physical_cores \
+#    -e TENSORFLOW_INTER_OP_PARALLELISM=2 \
+#    -e TENSORFLOW_INTRA_OP_PARALLELISM=$num_physical_cores \
+#    intel/intel-optimized-tensorflow-serving:2.8.0 \
+#    --model_config_file=/models/model_config.config
+#docker run --name test-mongo --rm -p 27017:27017 -d mongo:latest
+#docker run -itd --name niq -v ./:/app python:3.10 bash
+
+
+services:
+  tfserving:
+    image: intel/intel-optimized-tensorflow-serving:2.8.0
+    container_name: tfserving
+    ports:
+      - "8500:8500"
+      - "8501:8501"
+    volumes:
+      - "./tmp/model:/models"
+    environment:
+      - OMP_NUM_THREADS=4
+      - TENSORFLOW_INTER_OP_PARALLELISM=2
+      - TENSORFLOW_INTRA_OP_PARALLELISM=4
+    command: --model_config_file=/models/model_config.config
+    networks:
+      - niq_net
+
+  mongo:
+    image: mongo:latest
+    container_name: test-mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - niq_net
+
+  db:
+    image: postgres:14.1-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tfserving
+    ports:
+      - '5432:5432'
+    networks:
+      - niq_net
+
+  niq:
+    image: niq:1.0
+    container_name: niq
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app
+    command: "tail -f /dev/null"
+    networks:
+      - niq_net
+
+  jupyter:
+    image: quay.io/jupyter/base-notebook:python-3.11.7
+    container_name: jupyter-notebook
+    ports:
+      - "8889:8888"
+    volumes:
+      - ".:/home/jovyan/work"
+    command: start-notebook.py --NotebookApp.token='password'
+    networks:
+      - niq_net
+
+
+
+networks:
+  niq_net:

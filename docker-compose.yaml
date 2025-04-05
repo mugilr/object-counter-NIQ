@@ -1,0 +1,57 @@
+
+services:
+  tfserving:
+    image: intel/intel-optimized-tensorflow-serving:2.8.0
+    container_name: tfserving
+    ports:
+      - "8500:8500"
+      - "8501:8501"
+    volumes:
+      - "./tmp/model:/models"
+    environment:
+      - OMP_NUM_THREADS=4
+      - TENSORFLOW_INTER_OP_PARALLELISM=2
+      - TENSORFLOW_INTRA_OP_PARALLELISM=4
+    command: --model_config_file=/models/model_config.config
+    networks:
+      - niq_net
+
+  mongo:
+    image: mongo:latest
+    container_name: test-mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - niq_net
+
+  db:
+    image: postgres:14.1-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tfserving
+    ports:
+      - '5432:5432'
+    networks:
+      - niq_net
+
+  init-niq:
+    image: niq-object-count:1.0
+    container_name: init-niq
+    command: sh -c "python init_postgres.py && sleep 5" # Example init command
+    networks:
+      - niq_net
+
+  niq:
+    image: niq-object-count:1.0
+    container_name: niq
+    ports:
+      - "5000:5000"
+    depends_on:
+      - init-niq
+    networks:
+      - niq_net
+
+networks:
+  niq_net:

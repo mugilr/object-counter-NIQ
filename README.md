@@ -42,7 +42,7 @@ docker run \
     --name=tfserving \
     -p 8500:8500 \
     -p 8501:8501 \
-    -v "$(pwd)\tmp\model:/models" \
+    -v "$(pwd)/tmp/model:/models" \
     -e OMP_NUM_THREADS=$num_physical_cores \
     -e TENSORFLOW_INTER_OP_PARALLELISM=2 \
     -e TENSORFLOW_INTRA_OP_PARALLELISM=$num_physical_cores \
@@ -91,15 +91,35 @@ pip install -r requirements.txt
 python -m counter.entrypoints.webapp
 ```
 
-### Using real services in docker containers
+### Using real services
 
 ```
 # Unix
-ENV=prod python -m counter.entrypoints.webapp
+export ENV=prod
+export DB_TYPE=postgres # use mongo or postgres
+python -m init_postgres # Initialize the postgres schemas
+python -m counter.entrypoints.webapp
 
 # Powershell
 $env:ENV = "prod"
 python -m counter.entrypoints.webapp
+```
+
+### Using real services in docker container
+
+Build docker container image
+```bash
+docker build -t niq-object-count:1.0 .
+```
+Execute the container
+```bash
+docker rm -f niq-object-count
+docker run --name niq-object-count --rm -p 5000:5000 -d niq-object-count:1.0
+```
+
+## Use it as a end-2-end service 
+```bash
+docker compose up -d
 ```
 
 ## Call the service

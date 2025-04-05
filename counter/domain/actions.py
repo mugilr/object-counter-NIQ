@@ -15,7 +15,10 @@ class CountDetectedObjects:
         predictions = self.__find_valid_predictions(image, threshold)
         object_counts = count(predictions)
         self.__object_count_repo.update_values(object_counts)
-        total_objects = self.__object_count_repo.read_values()
+        object_classes = []
+        for value in object_counts:
+            object_classes.append(value.object_class)
+        total_objects = self.__object_count_repo.read_values(object_classes)
         return CountResponse(current_objects=object_counts, total_objects=total_objects)
 
     def __find_valid_predictions(self, image, threshold):

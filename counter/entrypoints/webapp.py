@@ -6,7 +6,7 @@ from counter import config
 
 def create_app():
     
-    app = Flask(__name__)
+    app = Flask("OBJECT COUNTER")
     
     count_action = config.get_count_action()
     
