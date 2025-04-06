@@ -138,6 +138,8 @@ pytest
 
 ## Scope for Improvement
 
+* Use Gunicorn for multi-instances application
+* Change appliaction into FastAPI for better concurrency and latency
 * Add Load Balancer for better traffic routing and fault toleration
 * Create proper observability for model performance and service app performance
 * Based on model performance metric we can decide on change in model or improvement
